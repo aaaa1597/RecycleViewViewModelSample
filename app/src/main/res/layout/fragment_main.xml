@@ -8,11 +8,36 @@
     tools:context=".MainFragment">
 
     <TextView
+        android:id="@+id/txv_sample"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btn_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="追加"
+        app:layout_constraintTop_toBottomOf="@id/txv_sample"
+        app:layout_constraintEnd_toStartOf="@id/txv_sample"/>
+
+    <Button
+        android:id="@+id/btn_del"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="削除"
+        app:layout_constraintTop_toBottomOf="@id/txv_sample"
+        app:layout_constraintStart_toEndOf="@id/txv_sample"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ryv_sample"
+        android:layout_marginTop="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/btn_add"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
