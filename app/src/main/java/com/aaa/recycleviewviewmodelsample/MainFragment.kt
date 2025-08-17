@@ -10,7 +10,9 @@ import android.widget.TextView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.aaa.recycleviewviewmodelsample.databinding.FragmentMainBinding
 import kotlinx.coroutines.Job
@@ -23,12 +25,6 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /* StateFlow監視 */
-        dataFlowJob = lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            _viewModel.dataFlow.collect { newData ->
-                (_binding.ryvSample.adapter as CustomAdapter).updateData(newData)
-            }
-        }}
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View {
@@ -41,8 +37,16 @@ class MainFragment : Fragment() {
         /* RecyclerViewのレイアウト指定 */
         _binding.ryvSample.layoutManager = LinearLayoutManager(requireContext())
         /* アダプター定義 */
-        val adapter = CustomAdapter(mutableListOf())
+        val adapter = CustomAdapter()
         _binding.ryvSample.adapter = adapter
+
+        /* StateFlow監視 */
+        dataFlowJob = viewLifecycleOwner.lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            _viewModel.dataFlow.collect { newData ->
+                adapter.submitList(newData)
+            }
+        }}
+
         _binding.btnAdd.setOnClickListener {
             val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9') /* 使用する文字の種類 */
             val addstr = (1..4)
@@ -61,8 +65,8 @@ class MainFragment : Fragment() {
     }
 }
 
-class CustomAdapter(private var data: MutableList<String>) :
-        RecyclerView.Adapter<CustomAdapter.CustomViewHolder>() {
+class CustomAdapter :
+        ListAdapter<String, CustomAdapter.CustomViewHolder>(DiffCallback) {
     class CustomViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById(android.R.id.text1)
     }
@@ -74,15 +78,21 @@ class CustomAdapter(private var data: MutableList<String>) :
     }
 
     override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
-        holder.textView.text = data[position]
+        holder.textView.text = getItem(position)
     }
 
-    override fun getItemCount() = data.size
-
     /* データを更新するメソッド */
-    fun updateData(newData: List<String>) {
-        data.clear()
-        data.addAll(newData)
-        notifyDataSetChanged()
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<String>() {
+            override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
+                // アイテムが一意に識別できるなら ID 比較を使う
+                return oldItem == newItem
+            }
+
+            override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+                // 中身が同じかどうか
+                return oldItem == newItem
+            }
+        }
     }
 }
